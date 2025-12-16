@@ -5,6 +5,7 @@ compile_commands.json
 .venv/**
 tests/cases/*/build
 
+ar
 cc
 disasm
 exec

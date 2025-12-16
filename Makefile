@@ -27,7 +27,7 @@ OBJS = $(SRCS:.cpp=.o)
 BASE_EXEC = fle_base
 
 # 工具名称
-TOOLS = cc ld nm objdump readfle exec disasm
+TOOLS = cc ld nm objdump readfle exec disasm ar
 
 #=============================================================================
 # 检查当前 CXXFLAGS 与上一次是否不同，如果不同，就删除所有 .o 文件以触发重新编译
@@ -96,7 +96,10 @@ test_5: all
 test_6: all
 	python3 grader.py --group section_perm
 
+test_8: all
+	python3 grader.py --group static_linking
+
 retest: all
 	python3 grader.py -f
 
-.PHONY: all clean test check_compiler test_1 test_2 test_3 test_4 test_5 test_6 retest
+.PHONY: all clean test check_compiler test_1 test_2 test_3 test_4 test_5 test_6 test_8 retest

@@ -153,6 +153,7 @@ struct FLEObject {
     std::vector<Symbol> symbols; // Global symbol table
     std::vector<ProgramHeader> phdrs; // Program headers (for .exe)
     std::vector<SectionHeader> shdrs; // Section headers
+    std::vector<FLEObject> members; // Members of archive
     size_t entry = 0; // Entry point (for .exe)
 };
 

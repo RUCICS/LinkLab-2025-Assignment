@@ -11,7 +11,6 @@
 #include <unordered_map>
 #include <vector>
 
-
 using namespace std::string_literals;
 
 void segv_handler(int sig, siginfo_t* si, void* ctx)
@@ -97,20 +96,24 @@ static RelocationType parse_relocation_type(const std::string& type_str)
     throw std::runtime_error("Invalid relocation type: " + type_str);
 }
 
-FLEObject load_fle(const std::string& file)
+static FLEObject parse_fle_from_json(const json& j, const std::string& name)
 {
-    std::ifstream infile(file);
-    std::string content((std::istreambuf_iterator<char>(infile)),
-        std::istreambuf_iterator<char>());
-
-    if (content.substr(0, 2) == "#!") {
-        content = content.substr(content.find('\n') + 1);
-    }
-
-    json j = json::parse(content);
     FLEObject obj;
-    obj.name = get_basename(file);
+    obj.name = name;
     obj.type = j["type"].get<std::string>();
+
+    if (obj.type == ".ar") {
+        if (j.contains("members")) {
+            for (const auto& member_json : j["members"]) {
+                std::string member_name = "";
+                if (member_json.contains("name")) {
+                    member_name = member_json["name"].get<std::string>();
+                }
+                obj.members.push_back(parse_fle_from_json(member_json, member_name));
+            }
+        }
+        return obj;
+    }
 
     // 如果是可执行文件，读取入口点和程序头
     if (obj.type == ".exe") {
@@ -126,7 +129,7 @@ FLEObject load_fle(const std::string& file)
 
     // 第一遍：收集所有符号定义并计算偏移量
     for (auto& [key, value] : j.items()) {
-        if (key == "type" || key == "entry" || key == "phdrs" || key == "shdrs")
+        if (key == "type" || key == "entry" || key == "phdrs" || key == "shdrs" || key == "members" || key == "name")
             continue;
 
         // size_t current_offset = 0;
@@ -162,7 +165,7 @@ FLEObject load_fle(const std::string& file)
 
     // 第二遍：处理节的内容和重定位
     for (auto& [key, value] : j.items()) {
-        if (key == "type" || key == "entry" || key == "phdrs" || key == "shdrs")
+        if (key == "type" || key == "entry" || key == "phdrs" || key == "shdrs" || key == "members" || key == "name")
             continue;
 
         FLESection section;
@@ -235,6 +238,53 @@ FLEObject load_fle(const std::string& file)
     return obj;
 }
 
+FLEObject load_fle(const std::string& file)
+{
+    std::ifstream infile(file);
+    std::string content((std::istreambuf_iterator<char>(infile)),
+        std::istreambuf_iterator<char>());
+
+    if (content.substr(0, 2) == "#!") {
+        content = content.substr(content.find('\n') + 1);
+    }
+
+    json j = json::parse(content);
+    return parse_fle_from_json(j, get_basename(file));
+}
+
+void FLE_ar(const std::vector<std::string>& args)
+{
+    if (args.size() < 2) {
+        throw std::runtime_error("Usage: ar <output.fle> <input1.fle> ...");
+    }
+
+    std::string outfile = args[0];
+    json ar_json;
+    ar_json["type"] = ".ar";
+    ar_json["name"] = get_basename(outfile);
+
+    json members = json::array();
+    for (size_t i = 1; i < args.size(); ++i) {
+        std::ifstream infile(args[i]);
+        std::string content((std::istreambuf_iterator<char>(infile)),
+            std::istreambuf_iterator<char>());
+
+        if (content.substr(0, 2) == "#!") {
+            content = content.substr(content.find('\n') + 1);
+        }
+
+        json member_json = json::parse(content);
+        // Ensure name is set in the member JSON so it can be recovered
+        member_json["name"] = get_basename(args[i]);
+        members.push_back(member_json);
+    }
+
+    ar_json["members"] = members;
+
+    std::ofstream out(outfile);
+    out << ar_json.dump(4) << std::endl;
+}
+
 int main(int argc, char* argv[])
 {
     // singlestack
@@ -262,6 +312,7 @@ int main(int argc, char* argv[])
                   << "  ld [-o output.fle] input1.fle... Link FLE files\n"
                   << "  exec <input.fle>                 Execute FLE file\n"
                   << "  cc [-o output.fle] input.c...    Compile C files\n"
+                  << "  ar <output.fle> <input.fle>...   Create static archive\n"
                   << "  readfle <input.fle>              Display FLE file information\n"
                   << "  disasm <input.fle> <section>     Disassemble section\n";
         return 1;
@@ -336,6 +387,8 @@ int main(int argc, char* argv[])
                 throw std::runtime_error("Usage: disasm <input.fle> <section>");
             }
             FLE_disasm(load_fle(args[0]), args[1]);
+        } else if (tool == "FLE_ar") {
+            FLE_ar(args);
         } else {
             std::cerr << "Unknown tool: " << tool << std::endl;
             return 1;
