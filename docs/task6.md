@@ -29,7 +29,7 @@
 在实现时，最简单的做法是让每个段的起始地址都对齐到页边界。虽然理论上只有在权限切换时（比如从可执行段到只读段）才必须对齐，但对所有段统一对齐可以简化实现，也为将来可能的权限调整留出余地。一个简单的对齐算法是：如果当前地址是`addr`，页大小是`page_size`（4096），那么对齐后的地址是：
 
 $$
-\text{aligned} = \lceil \text{addr} / \text{page\_size} \rceil \times \text{page\_size}
+\text{aligned} = \lceil \text{addr} / \text{page\\_size} \rceil \times \text{page\\_size}
 $$
 
 或者用代码表达：`(addr + page_size - 1) / page_size * page_size`（整数除法）。
