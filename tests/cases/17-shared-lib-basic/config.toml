@@ -1,0 +1,60 @@
+[meta]
+name = "Shared Library Basic"
+description = "Test internal symbol resolution and dynamic symbol table export"
+score = 7
+
+[[run]]
+name = "Compile library source"
+command = "${root_dir}/cc"
+args = ["${test_dir}/basic.c", "-o", "${build_dir}/basic.o", "-g", "-Os"]
+[run.check]
+files = ["${build_dir}/basic.fo"]
+return_code = 0
+
+[[run]]
+name = "Link shared library"
+command = "${root_dir}/ld"
+args = ["-shared", "${build_dir}/basic.fo", "-o", "${build_dir}/libbasic.so"]
+[run.check]
+files = ["${build_dir}/libbasic.so"]
+return_code = 0
+
+[[run]]
+name = "Verify dynamic symbol table"
+command = "echo"
+args = ["verifying"]
+score = 4
+[run.check]
+special_judge = "judge.py"
+
+[[run]]
+name = "Compile main program"
+command = "${root_dir}/cc"
+args = ["${test_dir}/main.c", "-o", "${build_dir}/main.o", "-fPIC", "-g", "-Os"]
+[run.check]
+files = ["${build_dir}/main.fo"]
+return_code = 0
+
+[[run]]
+name = "Link executable with shared library"
+command = "${root_dir}/ld"
+args = [
+    "${build_dir}/main.fo",
+    "${build_dir}/libbasic.so",
+    "${common_dir}/minilibc.fo",
+    "-o",
+    "${build_dir}/program",
+]
+[run.check]
+files = ["${build_dir}/program"]
+return_code = 0
+
+[[run]]
+name = "Execute program"
+command = "${root_dir}/exec"
+args = ["${build_dir}/program"]
+score = 3
+[run.env]
+FLE_LIBRARY_PATH = "${build_dir}"
+[run.check]
+return_code = 0

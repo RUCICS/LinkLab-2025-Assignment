@@ -1,0 +1,72 @@
+[meta]
+name = "Complex PLT/GOT Offset"
+description = "Stress test PLT stub offset calculation with multiple functions"
+score = 7
+
+[[run]]
+name = "Compile library source"
+command = "${root_dir}/cc"
+args = [
+    "${test_dir}/libcomplex.c",
+    "-o",
+    "${build_dir}/libcomplex.o",
+    "-g",
+    "-Os",
+    "-fPIC",
+]
+[run.check]
+files = ["${build_dir}/libcomplex.fo"]
+return_code = 0
+
+[[run]]
+name = "Link shared library"
+command = "${root_dir}/ld"
+args = [
+    "-shared",
+    "${build_dir}/libcomplex.fo",
+    "-o",
+    "${build_dir}/libcomplex.so",
+]
+[run.check]
+files = ["${build_dir}/libcomplex.so"]
+return_code = 0
+
+[[run]]
+name = "Compile main program with PIC"
+command = "${root_dir}/cc"
+args = ["${test_dir}/main.c", "-o", "${build_dir}/main.o", "-fPIC", "-g", "-Os"]
+[run.check]
+files = ["${build_dir}/main.fo"]
+return_code = 0
+
+[[run]]
+name = "Link executable"
+command = "${root_dir}/ld"
+args = [
+    "${build_dir}/main.fo",
+    "${build_dir}/libcomplex.so",
+    "${common_dir}/minilibc.fo",
+    "-o",
+    "${build_dir}/program",
+]
+[run.check]
+files = ["${build_dir}/program"]
+return_code = 0
+
+[[run]]
+name = "Verify complex PLT/GOT structure"
+command = "echo"
+args = ["verifying"]
+score = 3
+[run.check]
+special_judge = "judge.py"
+
+[[run]]
+name = "Execute program"
+command = "${root_dir}/exec"
+args = ["${build_dir}/program"]
+score = 4
+[run.env]
+FLE_LIBRARY_PATH = "${build_dir}"
+[run.check]
+return_code = 0

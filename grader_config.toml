@@ -59,13 +59,16 @@ relocations = ["4", "5", "6"]
 symbol_resolution = ["7", "8", "9", "10"]
 
 # 任务五：多段内存布局
-multi_segment = ["11"]
+multi_segment = ["11", "12"]
 
-# 任务六：只读数据段
-ro_segment = ["12"]
-
-# 任务七：段权限
+# 任务六：段权限
 section_perm = ["13", "14"]
 
-# 任务八：静态链接库
+# 任务八七：静态链接库
 static_linking = ["15", "16"]
+
+# Bonus 1：生成共享库
+bonus1 = ["17", "18", "19"]
+
+# Bonus 2：链接使用共享库的程序
+bonus2 = ["20", "21", "22"]

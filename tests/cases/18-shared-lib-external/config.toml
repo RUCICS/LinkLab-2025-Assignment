@@ -1,0 +1,74 @@
+[meta]
+name = "External Symbol Relocation"
+description = "Test dynamic relocation table for external symbol references"
+score = 6
+
+[[run]]
+name = "Compile library source"
+command = "${root_dir}/cc"
+args = ["${test_dir}/external.c", "-o", "${build_dir}/external.o", "-g", "-Os"]
+[run.check]
+files = ["${build_dir}/external.fo"]
+return_code = 0
+
+[[run]]
+name = "Link shared library (with unresolved externals)"
+command = "${root_dir}/ld"
+args = [
+    "-shared",
+    "${build_dir}/external.fo",
+    "-o",
+    "${build_dir}/libexternal.so",
+]
+[run.check]
+files = ["${build_dir}/libexternal.so"]
+return_code = 0
+
+[[run]]
+name = "Verify dynamic relocation table"
+command = "echo"
+args = ["verifying"]
+score = 3
+[run.check]
+special_judge = "judge.py"
+
+[[run]]
+name = "Compile provider"
+command = "${root_dir}/cc"
+args = ["${test_dir}/provider.c", "-o", "${build_dir}/provider.o", "-g", "-Os"]
+[run.check]
+files = ["${build_dir}/provider.fo"]
+return_code = 0
+
+[[run]]
+name = "Compile main program"
+command = "${root_dir}/cc"
+args = ["${test_dir}/main.c", "-o", "${build_dir}/main.o", "-fPIC", "-g", "-Os"]
+[run.check]
+files = ["${build_dir}/main.fo"]
+return_code = 0
+
+[[run]]
+name = "Link executable"
+command = "${root_dir}/ld"
+args = [
+    "${build_dir}/main.fo",
+    "${build_dir}/libexternal.so",
+    "${build_dir}/provider.fo",
+    "${common_dir}/minilibc.fo",
+    "-o",
+    "${build_dir}/program",
+]
+[run.check]
+files = ["${build_dir}/program"]
+return_code = 0
+
+[[run]]
+name = "Execute program"
+command = "${root_dir}/exec"
+args = ["${build_dir}/program"]
+score = 3
+[run.env]
+FLE_LIBRARY_PATH = "${build_dir}"
+[run.check]
+return_code = 0

@@ -1,0 +1,67 @@
+[meta]
+name = "PLT/GOT Basic"
+description = "Test PLT stub generation and GOT allocation for shared library calls"
+score = 7
+
+[[run]]
+name = "Compile library source"
+command = "${root_dir}/cc"
+args = [
+    "${test_dir}/libmath.c",
+    "-o",
+    "${build_dir}/libmath.o",
+    "-g",
+    "-Os",
+    "-fPIC",
+]
+[run.check]
+files = ["${build_dir}/libmath.fo"]
+return_code = 0
+
+[[run]]
+name = "Link shared library"
+command = "${root_dir}/ld"
+args = ["-shared", "${build_dir}/libmath.fo", "-o", "${build_dir}/libmath.so"]
+[run.check]
+files = ["${build_dir}/libmath.so"]
+return_code = 0
+
+[[run]]
+name = "Compile main program with PIC"
+command = "${root_dir}/cc"
+args = ["${test_dir}/main.c", "-o", "${build_dir}/main.o", "-fPIC", "-g", "-Os"]
+[run.check]
+files = ["${build_dir}/main.fo"]
+return_code = 0
+
+[[run]]
+name = "Link executable with shared library"
+command = "${root_dir}/ld"
+args = [
+    "${build_dir}/main.fo",
+    "${build_dir}/libmath.so",
+    "${common_dir}/minilibc.fo",
+    "-o",
+    "${build_dir}/program",
+]
+[run.check]
+files = ["${build_dir}/program"]
+return_code = 0
+
+[[run]]
+name = "Verify PLT/GOT structure"
+command = "echo"
+args = ["verifying"]
+score = 3
+[run.check]
+special_judge = "judge.py"
+
+[[run]]
+name = "Execute program"
+command = "${root_dir}/exec"
+args = ["${build_dir}/program"]
+score = 4
+[run.env]
+FLE_LIBRARY_PATH = "${build_dir}"
+[run.check]
+return_code = 0

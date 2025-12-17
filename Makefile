@@ -123,15 +123,19 @@ test_5: all
 	python3 grader.py --group multi_segment
 
 test_6: all
-	python3 grader.py --group ro_segment
-
-test_7: all
 	python3 grader.py --group section_perm
 
-test_8: all
+test_7: all
 	python3 grader.py --group static_linking
+
+test_bonus1: all
+	python3 grader.py --group bonus1
+
+test_bonus2: all
+	python3 grader.py --group bonus2
 
 retest: all
 	python3 grader.py -f
 
-.PHONY: all clean test show_info test_1 test_2 test_3 test_4 test_5 test_6 test_7 test_8 retest config
+.PHONY: all clean test show_info test_1 test_2 test_3 test_4 test_5 test_6 test_7 test_bonus1 test_bonus2 retest config
+

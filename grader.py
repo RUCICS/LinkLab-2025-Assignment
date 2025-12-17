@@ -525,6 +525,12 @@ class TestRunner:
             self._resolve_path(str(arg), test.path, test.path)
             for arg in step.get("args", [])
         ]
+        
+        # 构建环境变量
+        step_env = os.environ.copy()
+        if "env" in step:
+            for key, value in step["env"].items():
+                step_env[key] = self._resolve_path(str(value), test.path, test.path)
 
         try:
             process = subprocess.run(
@@ -534,6 +540,7 @@ class TestRunner:
                 capture_output=True,
                 text=True,
                 timeout=step.get("timeout", 5.0),
+                env=step_env,
             )
 
             # 如果启用了详细输出模式

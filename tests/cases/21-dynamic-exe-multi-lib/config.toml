@@ -1,0 +1,97 @@
+[meta]
+name = "Multi-Library Dependency"
+description = "Test needed field and cross-library function calls"
+score = 6
+
+[[run]]
+name = "Compile libamy source"
+command = "${root_dir}/cc"
+args = [
+    "${test_dir}/libamy.c",
+    "-o",
+    "${build_dir}/libamy.o",
+    "-g",
+    "-Os",
+    "-fPIC",
+]
+[run.check]
+files = ["${build_dir}/libamy.fo"]
+return_code = 0
+
+[[run]]
+name = "Link libamy.so"
+command = "${root_dir}/ld"
+args = ["-shared", "${build_dir}/libamy.fo", "-o", "${build_dir}/libamy.so"]
+[run.check]
+files = ["${build_dir}/libamy.so"]
+return_code = 0
+
+[[run]]
+name = "Compile libelma source"
+command = "${root_dir}/cc"
+args = [
+    "${test_dir}/libelma.c",
+    "-o",
+    "${build_dir}/libelma.o",
+    "-fPIC",
+    "-g",
+    "-Os",
+]
+[run.check]
+files = ["${build_dir}/libelma.fo"]
+return_code = 0
+
+[[run]]
+name = "Link libelma.so (depends on libamy)"
+command = "${root_dir}/ld"
+args = [
+    "-shared",
+    "${build_dir}/libelma.fo",
+    "${build_dir}/libamy.so",
+    "-o",
+    "${build_dir}/libelma.so",
+]
+[run.check]
+files = ["${build_dir}/libelma.so"]
+return_code = 0
+
+[[run]]
+name = "Compile main program with PIC"
+command = "${root_dir}/cc"
+args = ["${test_dir}/main.c", "-o", "${build_dir}/main.o", "-fPIC", "-g", "-Os"]
+[run.check]
+files = ["${build_dir}/main.fo"]
+return_code = 0
+
+[[run]]
+name = "Link executable with both libraries"
+command = "${root_dir}/ld"
+args = [
+    "${build_dir}/main.fo",
+    "${build_dir}/libamy.so",
+    "${build_dir}/libelma.so",
+    "${common_dir}/minilibc.fo",
+    "-o",
+    "${build_dir}/program",
+]
+[run.check]
+files = ["${build_dir}/program"]
+return_code = 0
+
+[[run]]
+name = "Verify multi-lib dependency"
+command = "echo"
+args = ["verifying"]
+score = 3
+[run.check]
+special_judge = "judge.py"
+
+[[run]]
+name = "Execute program"
+command = "${root_dir}/exec"
+args = ["${build_dir}/program"]
+score = 3
+[run.env]
+FLE_LIBRARY_PATH = "${build_dir}"
+[run.check]
+return_code = 0
