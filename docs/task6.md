@@ -37,6 +37,29 @@ $$
 > [!NOTE]
 > 对齐会在段之间引入一些"空隙"。这些空间在文件中不需要存储内容，但在虚拟地址空间中它们是存在的。这是为了权限隔离必须付出的代价，在大多数情况下，浪费的空间相对于程序的总大小是可以接受的。
 
+```mermaid
+block-beta
+columns 3
+  block:File
+    columns 1
+    F1[".text (500B)"]
+    F2[".data (200B)"]
+  end
+
+  space
+
+  block:Memory
+    columns 1
+    M1[".text (r-x)<br/>0x400000"]
+    Hole1["<Padding/Hole><br/>(3596B)"]
+    M2[".data (rw-)<br/>0x401000"]
+  end
+
+  F1 --> M1
+  F2 --> M2
+  style Hole1 fill:#eee,stroke-dasharray: 5 5
+```
+
 ## .bss节的特殊性
 
 在前面的任务中，我们一直把`.bss`节当作普通的数据节处理——读取它的内容，拼接到可读写数据段中。但如果你仔细观察目标文件，会发现`.bss`节的内容似乎总是空的，即使节头显示它有一定的大小。
