@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
-  - name: 💬 讨论区
-    url: https://github.com/RUCICS/LinkLab-2024-Assignment/discussions
-    about: 对于一般性问题、想法交流或经验分享，建议使用讨论区而不是创建 issue。
-  - name: 📧 个人问题咨询
-    url: https://mail.ruc.edu.cn/
-    about: 对于个人特定的实验问题（如代码调试、环境配置等），请直接联系助教（邮箱或微信）。
+  - name: 💬 讨论区（推荐）
+    url: https://github.com/RUCICS/LinkLab-2025-Assignment/discussions
+    about: 对于实验问题、概念讨论、经验分享，建议优先使用讨论区。这样其他同学也能从交流中获益。
+  - name: 📧 联系助教
+    url: https://rucics.tech/staff/
+    about: 对于涉及隐私的问题（如成绩、特殊情况）或需要助教直接协助的紧急技术问题，请通过邮箱或微信联系助教。

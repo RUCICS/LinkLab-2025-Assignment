@@ -6,7 +6,11 @@ body:
   - type: markdown
     attributes:
       value: |
-        感谢你花时间填写这份bug报告！请尽可能详细地提供相关信息，这将帮助我们更快地定位和解决问题。
+        感谢你花时间填写这份bug报告！
+        
+        如果你不确定这是框架的bug还是自己实现的问题，可以先在[Discussions](discussions)中提问讨论。确认是框架问题后，再提交issue会更有效率。
+
+        请尽可能详细地提供信息，这将帮助我们更快地定位和解决问题。
 
   - type: textarea
     id: bug-description
@@ -17,16 +21,37 @@ body:
     validations:
       required: true
 
+  - type: dropdown
+    id: task
+    attributes:
+      label: 相关任务
+      description: 这个bug出现在哪个任务中？
+      options:
+        - 任务一：符号表查看器
+        - 任务二：基础链接器
+        - 任务三：多种地址引用方式
+        - 任务四：符号冲突
+        - 任务五：代码与数据分离
+        - 任务六：内存保护机制
+        - 任务七：静态链接库
+        - Bonus 1：生成共享库
+        - Bonus 2：链接使用共享库的程序
+        - 框架/工具问题
+        - 不确定/其他
+      multiple: false
+    validations:
+      required: false
+
   - type: textarea
     id: reproduction
     attributes:
       label: 复现步骤
       description: 请详细描述如何复现这个bug
       placeholder: |
-        1. 进入'...'
-        2. 点击'....'
-        3. 执行'....'
-        4. 出现错误
+        1. 使用的测试用例：make test_2
+        2. 执行的命令：./ld input1.fo input2.fo -o output.fle
+        3. 观察到的错误：段错误 / 链接失败 / 测试未通过
+        4. 相关的错误信息（如果有）
     validations:
       required: true
 
@@ -47,15 +72,33 @@ body:
       required: true
 
   - type: dropdown
-    id: os
+    id: linux-distro
     attributes:
-      label: 操作系统
-      description: 你使用的是什么操作系统？
+      label: Linux发行版
+      description: 实验实际运行的Linux发行版和版本
       options:
-        - Ubuntu 22.04或更高版本
+        - Ubuntu 22.04
+        - Ubuntu 24.04
+        - 其他Ubuntu版本
+        - Debian
+        - Arch Linux
+        - Fedora
         - 其他Linux发行版
-        - Windows + WSL2
-        - macOS
+        - 课程服务器
+    validations:
+      required: true
+
+  - type: dropdown
+    id: runtime-env
+    attributes:
+      label: 运行环境
+      description: Linux是如何运行的？
+      options:
+        - 原生x86-64 Linux系统
+        - WSL 2 (Windows)
+        - OrbStack (macOS)
+        - 其他虚拟机/容器
+        - 课程服务器
     validations:
       required: true
 
@@ -63,17 +106,26 @@ body:
     id: compiler
     attributes:
       label: 编译器版本
-      description: 你使用的g++版本是多少？
-      placeholder: 例如：g++ 12.0.0
+      description: 你使用的编译器和版本是什么？
+      placeholder: 例如：g++ 11.4.0 或 clang++ 14.0.0
     validations:
       required: true
+
+  - type: input
+    id: cpp-std
+    attributes:
+      label: C++标准
+      description: 你配置的C++标准版本是什么？
+      placeholder: 例如：c++17（默认）、c++20、c++23
+    validations:
+      required: false
 
   - type: input
     id: python
     attributes:
       label: Python版本
       description: 你使用的Python版本是多少？
-      placeholder: 例如：Python 3.8.10
+      placeholder: 例如：Python 3.10.12
     validations:
       required: true
 
@@ -91,3 +143,16 @@ body:
     attributes:
       label: 补充信息
       description: 还有什么其他相关信息需要补充吗？ 
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: 确认事项
+      description: 在提交bug报告前，请确认以下内容
+      options:
+        - label: 我已经在[Issues](issues)和[Discussions](discussions)中搜索过，确认这不是一个已知问题
+          required: true
+        - label: 我已经尝试过重新编译（make clean && make）
+          required: true
+        - label: 我已经在Discussions中询问过，或者确信这是框架/文档的问题而不是我的实现问题
+          required: false
